@@ -221,9 +221,10 @@ public class ArrayList<E> extends AbstractList<E>
     }
 
     private void ensureExplicitCapacity(int minCapacity) {
+        //用于记录修改次数
         modCount++;
 
-        // overflow-conscious code
+        //新增数据后的容量大于当前elementData数组的长度，就要进行扩容
         if (minCapacity - elementData.length > 0)
             grow(minCapacity);
     }
@@ -237,26 +238,30 @@ public class ArrayList<E> extends AbstractList<E>
     private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
 
     /**
-     * Increases the capacity to ensure that it can hold at least the
-     * number of elements specified by the minimum capacity argument.
+     * 增加容量以确保它至少可以容纳由最小容量参数指定的元素数量。
      *
-     * @param minCapacity the desired minimum capacity
+     * @param minCapacity 所需的最小容量
      */
     private void grow(int minCapacity) {
         // overflow-conscious code
         int oldCapacity = elementData.length;
+        //扩容后的容量是原先容量的1.5倍
         int newCapacity = oldCapacity + (oldCapacity >> 1);
+        //addAll情况下可能产生
         if (newCapacity - minCapacity < 0)
             newCapacity = minCapacity;
+        //新容量大于定义的最大长度
         if (newCapacity - MAX_ARRAY_SIZE > 0)
             newCapacity = hugeCapacity(minCapacity);
-        // minCapacity is usually close to size, so this is a win:
+        //上面两个if判断是极端情况，一般都是执行下面这句，拷贝内容的新的长度数组中
         elementData = Arrays.copyOf(elementData, newCapacity);
     }
 
     private static int hugeCapacity(int minCapacity) {
+        //这里超过int最大值可能出现负数，直接抛OOM了
         if (minCapacity < 0) // overflow
             throw new OutOfMemoryError();
+        //最大也就是Integer的最大值了
         return (minCapacity > MAX_ARRAY_SIZE) ?
             Integer.MAX_VALUE :
             MAX_ARRAY_SIZE;
@@ -460,11 +465,14 @@ public class ArrayList<E> extends AbstractList<E>
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
     public void add(int index, E element) {
+        //校验index是否合法
         rangeCheckForAdd(index);
 
         ensureCapacityInternal(size + 1);  // Increments modCount!!
+        //将index坐标的起始数据往后一个位置移动
         System.arraycopy(elementData, index, elementData, index + 1,
                          size - index);
+        //替换掉index坐标下的值
         elementData[index] = element;
         size++;
     }
@@ -566,8 +574,11 @@ public class ArrayList<E> extends AbstractList<E>
     public boolean addAll(Collection<? extends E> c) {
         Object[] a = c.toArray();
         int numNew = a.length;
+        //重新计算容量，看是否需要扩容
         ensureCapacityInternal(size + numNew);  // Increments modCount
+        //将a数组第0个index起的内容复制到elementData的size index下为起始存放，也就是追加到最后面。
         System.arraycopy(a, 0, elementData, size, numNew);
+        //赋值新的长度
         size += numNew;
         return numNew != 0;
     }

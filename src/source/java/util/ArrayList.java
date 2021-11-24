@@ -295,11 +295,7 @@ public class ArrayList<E> extends AbstractList<E>
     }
 
     /**
-     * Returns the index of the first occurrence of the specified element
-     * in this list, or -1 if this list does not contain the element.
-     * More formally, returns the lowest index <tt>i</tt> such that
-     * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>,
-     * or -1 if there is no such index.
+     * 寻找数据的坐标，找不到返回-1
      */
     public int indexOf(Object o) {
         if (o == null) {
@@ -315,11 +311,7 @@ public class ArrayList<E> extends AbstractList<E>
     }
 
     /**
-     * Returns the index of the last occurrence of the specified element
-     * in this list, or -1 if this list does not contain the element.
-     * More formally, returns the highest index <tt>i</tt> such that
-     * <tt>(o==null&nbsp;?&nbsp;get(i)==null&nbsp;:&nbsp;o.equals(get(i)))</tt>,
-     * or -1 if there is no such index.
+     * 和indexOf一样，不同的是遍历顺序，这里是从后到前
      */
     public int lastIndexOf(Object o) {
         if (o == null) {
@@ -413,11 +405,7 @@ public class ArrayList<E> extends AbstractList<E>
     }
 
     /**
-     * Returns the element at the specified position in this list.
-     *
-     * @param  index index of the element to return
-     * @return the element at the specified position in this list
-     * @throws IndexOutOfBoundsException {@inheritDoc}
+     * 获取指定index下的值
      */
     public E get(int index) {
         rangeCheck(index);
@@ -426,13 +414,7 @@ public class ArrayList<E> extends AbstractList<E>
     }
 
     /**
-     * Replaces the element at the specified position in this list with
-     * the specified element.
-     *
-     * @param index index of the element to replace
-     * @param element element to be stored at the specified position
-     * @return the element previously at the specified position
-     * @throws IndexOutOfBoundsException {@inheritDoc}
+     * 替换指定index的值
      */
     public E set(int index, E element) {
         rangeCheck(index);
@@ -496,6 +478,7 @@ public class ArrayList<E> extends AbstractList<E>
         if (numMoved > 0)
             System.arraycopy(elementData, index+1, elementData, index,
                              numMoved);
+        //将最后一个数组设置为null，解决删除最后一个元素的情况（for循环遍历从size开始倒序删除就不会存在数组移动）
         elementData[--size] = null; // clear to let GC do its work
 
         return oldValue;
@@ -545,8 +528,7 @@ public class ArrayList<E> extends AbstractList<E>
     }
 
     /**
-     * Removes all of the elements from this list.  The list will
-     * be empty after this call returns.
+     * 清空数组中所有数据，并将size设为0
      */
     public void clear() {
         modCount++;
@@ -605,11 +587,14 @@ public class ArrayList<E> extends AbstractList<E>
         int numNew = a.length;
         ensureCapacityInternal(size + numNew);  // Increments modCount
 
+        //计算需要往右移动的间隔数量
         int numMoved = size - index;
         if (numMoved > 0)
+            //elementData index位置开始的数据往后移动的位数=新插入的集合长度（numNew）
             System.arraycopy(elementData, index, elementData, index + numNew,
                              numMoved);
 
+        //将新插入的数据补充到源数组移动前的位置，即从index位置开始插入
         System.arraycopy(a, 0, elementData, index, numNew);
         size += numNew;
         return numNew != 0;

@@ -212,14 +212,14 @@ public class LinkedList<E>
         final Node<E> next = x.next;
         final Node<E> prev = x.prev;
 
-        if (prev == null) {
+        if (prev == null) {//说明删除的是第一个节点
             first = next;
         } else {
             prev.next = next;
             x.prev = null;
         }
 
-        if (next == null) {
+        if (next == null) { //删除的是最后一个节点
             last = prev;
         } else {
             next.prev = prev;
@@ -566,7 +566,7 @@ public class LinkedList<E>
     Node<E> node(int index) {
         // assert isElementIndex(index);
 
-        if (index < (size >> 1)) {
+        if (index < (size >> 1)) { //取中位然后选一边来查找
             Node<E> x = first;
             for (int i = 0; i < index; i++)
                 x = x.next;

@@ -155,8 +155,8 @@ public class ArrayDeque<E> extends AbstractCollection<E>
         if (newCapacity < 0)
             throw new IllegalStateException("Sorry, deque too big");
         Object[] a = new Object[newCapacity];
-        System.arraycopy(elements, p, a, 0, r);
-        System.arraycopy(elements, 0, a, r, p);
+        System.arraycopy(elements, p, a, 0, r);//复制head右边的数据
+        System.arraycopy(elements, 0, a, r, p);//在复制head左边的数据
         elements = a;
         head = 0;
         tail = n;
@@ -227,7 +227,7 @@ public class ArrayDeque<E> extends AbstractCollection<E>
         if (e == null)
             throw new NullPointerException();
         elements[head = (head - 1) & (elements.length - 1)] = e;
-        if (head == tail)
+        if (head ==tail )
             doubleCapacity();
     }
 

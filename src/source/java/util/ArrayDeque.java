@@ -112,7 +112,7 @@ public class ArrayDeque<E> extends AbstractCollection<E>
 
     /**
      * The minimum capacity that we'll use for a newly created deque.
-     * Must be a power of 2.
+     * Must be a power of 2. （数组最小容量，必须要2的幂次方）
      */
     private static final int MIN_INITIAL_CAPACITY = 8;
 
@@ -128,7 +128,7 @@ public class ArrayDeque<E> extends AbstractCollection<E>
         // Find the best power of two to hold elements.
         // Tests "<=" because arrays aren't kept full.
         if (numElements >= initialCapacity) {
-            initialCapacity = numElements;
+            initialCapacity = numElements; //以下操作保证容量是2的幂次方
             initialCapacity |= (initialCapacity >>>  1);
             initialCapacity |= (initialCapacity >>>  2);
             initialCapacity |= (initialCapacity >>>  4);
@@ -151,12 +151,12 @@ public class ArrayDeque<E> extends AbstractCollection<E>
         int p = head;
         int n = elements.length;
         int r = n - p; // number of elements to the right of p
-        int newCapacity = n << 1;
+        int newCapacity = n << 1; //原有容量*2，2倍
         if (newCapacity < 0)
             throw new IllegalStateException("Sorry, deque too big");
         Object[] a = new Object[newCapacity];
-        System.arraycopy(elements, p, a, 0, r);//复制head右边的数据
-        System.arraycopy(elements, 0, a, r, p);//在复制head左边的数据
+        System.arraycopy(elements, p, a, 0, r);//复制head右边的数据，到新数组的第0个下标位
+        System.arraycopy(elements, 0, a, r, p);//在复制head左边的数据（0~head）,从旧数组的length下标开始
         elements = a;
         head = 0;
         tail = n;
@@ -226,7 +226,7 @@ public class ArrayDeque<E> extends AbstractCollection<E>
     public void addFirst(E e) {
         if (e == null)
             throw new NullPointerException();
-        elements[head = (head - 1) & (elements.length - 1)] = e;
+        elements[head = (head - 1) & (elements.length - 1)] = e;//取模并保证head不越界
         if (head ==tail )
             doubleCapacity();
     }
@@ -290,7 +290,7 @@ public class ArrayDeque<E> extends AbstractCollection<E>
             throw new NoSuchElementException();
         return x;
     }
-
+    /** 获取第一个元素并删除 */
     public E pollFirst() {
         int h = head;
         @SuppressWarnings("unchecked")
@@ -299,12 +299,12 @@ public class ArrayDeque<E> extends AbstractCollection<E>
         if (result == null)
             return null;
         elements[h] = null;     // Must null out slot
-        head = (h + 1) & (elements.length - 1);
+        head = (h + 1) & (elements.length - 1); //清空head位置数据并+1，右移
         return result;
     }
 
     public E pollLast() {
-        int t = (tail - 1) & (elements.length - 1);
+        int t = (tail - 1) & (elements.length - 1); //获取tail前面的一个元素，tail=elements.length,除了初始化时为0
         @SuppressWarnings("unchecked")
         E result = (E) elements[t];
         if (result == null)
@@ -335,13 +335,13 @@ public class ArrayDeque<E> extends AbstractCollection<E>
             throw new NoSuchElementException();
         return result;
     }
-
+    /**  获取第一个位置元素 */
     @SuppressWarnings("unchecked")
     public E peekFirst() {
         // elements[head] is null if deque empty
         return (E) elements[head];
     }
-
+    /** 获取最后一个位置元素 */
     @SuppressWarnings("unchecked")
     public E peekLast() {
         return (E) elements[(tail - 1) & (elements.length - 1)];

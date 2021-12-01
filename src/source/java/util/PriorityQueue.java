@@ -284,7 +284,7 @@ public class PriorityQueue<E> extends AbstractQueue<E>
     private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
 
     /**
-     * Increases the capacity of the array.
+     * Increases the capacity of the array. （数组扩容）
      *
      * @param minCapacity the desired minimum capacity
      */
@@ -334,14 +334,14 @@ public class PriorityQueue<E> extends AbstractQueue<E>
         if (e == null)
             throw new NullPointerException();
         modCount++;
-        int i = size;
+        int i = size; //i为当前插入的数组下标
         if (i >= queue.length)
-            grow(i + 1);
+            grow(i + 1); //扩容
         size = i + 1;
         if (i == 0)
             queue[0] = e;
         else
-            siftUp(i, e);
+            siftUp(i, e); //计算大小调整位置
         return true;
     }
 
@@ -586,11 +586,11 @@ public class PriorityQueue<E> extends AbstractQueue<E>
     public E poll() {
         if (size == 0)
             return null;
-        int s = --size;
+        int s = --size; //末尾index
         modCount++;
-        E result = (E) queue[0];
-        E x = (E) queue[s];
-        queue[s] = null;
+        E result = (E) queue[0]; //取第0个数据
+        E x = (E) queue[s]; //取末尾数据
+        queue[s] = null;    //清空末尾数据
         if (s != 0)
             siftDown(0, x);
         return result;
@@ -641,7 +641,7 @@ public class PriorityQueue<E> extends AbstractQueue<E>
      * @param x the item to insert
      */
     private void siftUp(int k, E x) {
-        if (comparator != null)
+        if (comparator != null) //指定comparator
             siftUpUsingComparator(k, x);
         else
             siftUpComparable(k, x);
@@ -650,15 +650,15 @@ public class PriorityQueue<E> extends AbstractQueue<E>
     @SuppressWarnings("unchecked")
     private void siftUpComparable(int k, E x) {
         Comparable<? super E> key = (Comparable<? super E>) x;
-        while (k > 0) {
-            int parent = (k - 1) >>> 1;
-            Object e = queue[parent];
-            if (key.compareTo((E) e) >= 0)
+        while (k > 0) { //插入位置要大于0才进行处理
+            int parent = (k - 1) >>> 1; //获取当前插入位置的父节点下标
+            Object e = queue[parent];   //获取父节点数据
+            if (key.compareTo((E) e) >= 0)  //新插入的数据大于等于父节点数据，直接break
                 break;
-            queue[k] = e;
+            queue[k] = e;   //小于父节点的数据，那就要交换位置了(这里父节点的数据会循环比较最终父节点一定是小于子节点的数据)
             k = parent;
         }
-        queue[k] = key;
+        queue[k] = key; //赋值数据到对应插入的位置
     }
 
     @SuppressWarnings("unchecked")
@@ -691,16 +691,16 @@ public class PriorityQueue<E> extends AbstractQueue<E>
 
     @SuppressWarnings("unchecked")
     private void siftDownComparable(int k, E x) {
-        Comparable<? super E> key = (Comparable<? super E>)x;
+        Comparable<? super E> key = (Comparable<? super E>)x;   //末尾数据
         int half = size >>> 1;        // loop while a non-leaf
         while (k < half) {
             int child = (k << 1) + 1; // assume left child is least
-            Object c = queue[child];
-            int right = child + 1;
+            Object c = queue[child];    //获取左节点
+            int right = child + 1;  //获取右节点下标
             if (right < size &&
-                ((Comparable<? super E>) c).compareTo((E) queue[right]) > 0)
-                c = queue[child = right];
-            if (key.compareTo((E) c) <= 0)
+                ((Comparable<? super E>) c).compareTo((E) queue[right]) > 0)    //左节点大于右节点，交换位置
+                c = queue[child = right];   //左节点下标变成右节点下标，并用左节点变量记录右节点数据
+            if (key.compareTo((E) c) <= 0) // 最后节点和左节点变量进行比较，大于才进行交换
                 break;
             queue[k] = c;
             k = child;

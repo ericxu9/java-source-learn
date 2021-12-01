@@ -400,18 +400,18 @@ public class HashMap<K,V> extends AbstractMap<K,V>
         if ((p = tab[i = (n - 1) & hash]) == null)
             tab[i] = newNode(hash, key, value, null); //不存在新增newNode
         else {
-            Node<K,V> e; K k;
+            Node<K,V> e; K k; // e!=null，说明key重复，直接覆盖原有的数据
             if (p.hash == hash &&
                 ((k = p.key) == key || (key != null && key.equals(k)))) //判断key的hash和key的值是否相同
                 e = p;
-            else if (p instanceof TreeNode)
+            else if (p instanceof TreeNode) //判断当前是否是TreeNode示例
                 e = ((TreeNode<K,V>)p).putTreeVal(this, tab, hash, key, value);
             else {
-                for (int binCount = 0; ; ++binCount) {
+                for (int binCount = 0; ; ++binCount) { //追加到链表末端
                     if ((e = p.next) == null) {
                         p.next = newNode(hash, key, value, null);
                         if (binCount >= TREEIFY_THRESHOLD - 1) // -1 for 1st
-                            treeifyBin(tab, hash);
+                            treeifyBin(tab, hash); //将链表转换成树结构
                         break;
                     }
                     if (e.hash == hash &&

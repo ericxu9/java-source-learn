@@ -397,20 +397,20 @@ public class HashMap<K,V> extends AbstractMap<K,V>
         Node<K,V>[] tab; Node<K,V> p; int n, i; //tab:存放node的数组； p:记录table中最后一个node；n:table数组长度；
         if ((tab = table) == null || (n = tab.length) == 0)
             n = (tab = resize()).length; //初始化table容量
-        if ((p = tab[i = (n - 1) & hash]) == null)
-            tab[i] = newNode(hash, key, value, null); //不存在新增newNode
+        if ((p = tab[i = (n - 1) & hash]) == null)  //table数组中不存在，直接往table中新增newNode
+            tab[i] = newNode(hash, key, value, null);
         else {
-            Node<K,V> e; K k; // e!=null，说明key重复，直接覆盖原有的数据
+            Node<K,V> e; K k; // e!=null，说明key重复，直接覆盖原有的数据并return
             if (p.hash == hash &&
-                ((k = p.key) == key || (key != null && key.equals(k)))) //判断key的hash和key的值是否相同
+                ((k = p.key) == key || (key != null && key.equals(k)))) //判断key的值和hash值是否相同
                 e = p;
-            else if (p instanceof TreeNode) //判断当前是否是TreeNode示例
+            else if (p instanceof TreeNode) //判断当前是否是TreeNode实例，添加到树节点中
                 e = ((TreeNode<K,V>)p).putTreeVal(this, tab, hash, key, value);
             else {
-                for (int binCount = 0; ; ++binCount) { //追加到链表末端
+                for (int binCount = 0; ; ++binCount) { //追加到node的下一个节点上
                     if ((e = p.next) == null) {
                         p.next = newNode(hash, key, value, null);
-                        if (binCount >= TREEIFY_THRESHOLD - 1) // -1 for 1st
+                        if (binCount >= TREEIFY_THRESHOLD - 1) // -1 for 1st 当数组中的链表长度大于等于7，则将链表转换为树
                             treeifyBin(tab, hash); //将链表转换成树结构
                         break;
                     }
@@ -420,16 +420,16 @@ public class HashMap<K,V> extends AbstractMap<K,V>
                     p = e;
                 }
             }
-            if (e != null) { // existing mapping for key
+            if (e != null) {
                 V oldValue = e.value;
-                if (!onlyIfAbsent || oldValue == null)
-                    e.value = value;
+                if (!onlyIfAbsent || oldValue == null) // put方法onlyIfAbsent默认参数传递的是false
+                    e.value = value; // 替换原有key的value
                 afterNodeAccess(e);
-                return oldValue;
+                return oldValue; //返回替换前的value
             }
         }
         ++modCount;
-        if (++size > threshold)
+        if (++size > threshold) //大于扩容阈值，扩容操作
             resize();
         afterNodeInsertion(evict);
         return null;

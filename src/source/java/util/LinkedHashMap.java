@@ -302,13 +302,18 @@ public class LinkedHashMap<K,V>
         }
     }
 
+    /**
+     * HashMap中当key相同时覆盖会调用以下方法；
+     * 将节点移动到链表尾端
+     * @param e
+     */
     void afterNodeAccess(Node<K,V> e) { // move node to last
         LinkedHashMap.Entry<K,V> last;
-        if (accessOrder && (last = tail) != e) {
+        if (accessOrder && (last = tail) != e) { //访问顺序为true，并且链表尾端节点!=当前节点
             LinkedHashMap.Entry<K,V> p =
-                (LinkedHashMap.Entry<K,V>)e, b = p.before, a = p.after;
-            p.after = null;
-            if (b == null)
+                (LinkedHashMap.Entry<K,V>)e, b = p.before, a = p.after;  //记录当前节点的前后节点
+            p.after = null; //将右节点设置为null
+            if (b == null) //说明前面没有节点，直接设置到head上
                 head = a;
             else
                 b.after = a;

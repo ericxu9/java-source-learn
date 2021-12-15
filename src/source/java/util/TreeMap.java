@@ -534,7 +534,7 @@ public class TreeMap<K,V>
      */
     public V put(K key, V value) {
         Entry<K,V> t = root;
-        if (t == null) {
+        if (t == null) { //第一次put，初始化root节点
             compare(key, key); // type (and possibly null) check
 
             root = new Entry<>(key, value, null);

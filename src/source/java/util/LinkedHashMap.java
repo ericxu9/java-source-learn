@@ -218,7 +218,7 @@ public class LinkedHashMap<K,V>
 
     // internal utilities
 
-    // link at the end of list
+    // link at the end of list （每次往put新node时后边插入节点，双向链表）
     private void linkNodeLast(LinkedHashMap.Entry<K,V> p) {
         LinkedHashMap.Entry<K,V> last = tail;
         tail = p;
@@ -255,7 +255,7 @@ public class LinkedHashMap<K,V>
     Node<K,V> newNode(int hash, K key, V value, Node<K,V> e) {
         LinkedHashMap.Entry<K,V> p =
             new LinkedHashMap.Entry<K,V>(hash, key, value, e);
-        linkNodeLast(p);
+        linkNodeLast(p); //记录插入顺序
         return p;
     }
 
@@ -296,7 +296,7 @@ public class LinkedHashMap<K,V>
 
     void afterNodeInsertion(boolean evict) { // possibly remove eldest
         LinkedHashMap.Entry<K,V> first;
-        if (evict && (first = head) != null && removeEldestEntry(first)) {
+        if (evict && (first = head) != null && removeEldestEntry(first)) { //removeEldestEntry == false,所以下面不会执行
             K key = first.key;
             removeNode(hash(key), key, null, false, true);
         }
@@ -444,7 +444,7 @@ public class LinkedHashMap<K,V>
         Node<K,V> e;
         if ((e = getNode(hash(key), key)) == null)
             return null;
-        if (accessOrder)
+        if (accessOrder) //移动当前节点到最后
             afterNodeAccess(e);
         return e.value;
     }

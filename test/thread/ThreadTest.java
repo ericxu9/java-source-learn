@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 public class ThreadTest {
 
     public static void main(String[] args) {
-        testDaemon();
+        testJoin();
     }
 
     public static void createThread1() {
@@ -59,6 +59,8 @@ public class ThreadTest {
 
     /**
      * main方法中调用，main方法属于非守护进程
+     * 当所有非守护线程结束时，程序也就终止，同时会杀死所有守护线程。
+     * 下面不会执行
      */
     public static void testDaemon(){
         Thread daemonThread = new Thread(new Runnable() {
@@ -75,5 +77,35 @@ public class ThreadTest {
         });
         daemonThread.setDaemon(true);
         daemonThread.start();
+    }
+
+    public static void testJoin() {
+        Thread aThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                System.out.println("A");
+            }
+        });
+        Thread bThread = new Thread(new Runnable() {
+
+            Thread thread;
+
+            public Runnable setThread(Thread thread) {
+                this.thread = thread;
+                return this;
+            }
+
+            @Override
+            public void run() {
+                try {
+                    thread.join(); //等待aThread执行完成
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println("B");
+            }
+        }.setThread(aThread));
+        bThread.start();
+        aThread.start();
     }
 }

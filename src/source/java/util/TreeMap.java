@@ -349,6 +349,7 @@ public class TreeMap<K,V>
             Comparable<? super K> k = (Comparable<? super K>) key;
         Entry<K,V> p = root;
         while (p != null) {
+            //通过比较，小于往左寻找，大于向右寻找。
             int cmp = k.compareTo(p.key);
             if (cmp < 0)
                 p = p.left;
@@ -546,9 +547,10 @@ public class TreeMap<K,V>
         Entry<K,V> parent;
         // split comparator and comparable paths
         Comparator<? super K> cpr = comparator;
-        if (cpr != null) {
+        if (cpr != null) { //自定义comparator
             do {
                 parent = t;
+                //小于往left child node找，大于往right child node找，等于只是替换掉value
                 cmp = cpr.compare(key, t.key);
                 if (cmp < 0)
                     t = t.left;
@@ -579,14 +581,14 @@ public class TreeMap<K,V>
             parent.left = e;
         else
             parent.right = e;
-        fixAfterInsertion(e);
+        fixAfterInsertion(e); //保证红黑树在进行插入节点之后，仍然是一颗红黑树
         size++;
         modCount++;
         return null;
     }
 
     /**
-     * Removes the mapping for this key from this TreeMap if present.
+     * Removes the mapping for this key from this TreeMap if present. (根据key来删除)
      *
      * @param  key key for which mapping should be removed
      * @return the previous value associated with {@code key}, or
@@ -605,7 +607,7 @@ public class TreeMap<K,V>
             return null;
 
         V oldValue = p.value;
-        deleteEntry(p);
+        deleteEntry(p); //删除节点
         return oldValue;
     }
 
@@ -2305,7 +2307,7 @@ public class TreeMap<K,V>
         // If strictly internal, copy successor's element to p and then make p
         // point to successor.
         if (p.left != null && p.right != null) {
-            Entry<K,V> s = successor(p);
+            Entry<K,V> s = successor(p); //寻找后继节点
             p.key = s.key;
             p.value = s.value;
             p = s;

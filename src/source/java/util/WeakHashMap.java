@@ -697,7 +697,7 @@ public class WeakHashMap<K,V>
 
     /**
      * The entries in this hash table extend WeakReference, using its main ref
-     * field as the key.
+     * field as the key. (Entry为弱引用，数据可能随时被GC回收)
      */
     private static class Entry<K,V> extends WeakReference<Object> implements Map.Entry<K,V> {
         V value;

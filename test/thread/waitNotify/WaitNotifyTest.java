@@ -1,14 +1,14 @@
-package thread;
+package thread.waitNotify;
 
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class WaitNotifyExample {
+public class WaitNotifyTest {
 
     public static void main(String[] args) {
         ExecutorService exec = Executors.newCachedThreadPool();
-        WaitNotifyExample example = new WaitNotifyExample();
+        WaitNotifyTest example = new WaitNotifyTest();
         exec.execute(new Runnable() {
             @Override
             public void run() {

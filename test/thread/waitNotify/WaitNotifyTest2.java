@@ -1,4 +1,4 @@
-package thread;
+package thread.waitNotify;
 
 /**
  * 线程同步，执行结果如下
@@ -7,7 +7,7 @@ package thread;
  * after notify
  * after wait
  */
-public class WaitNotifyExample2 {
+public class WaitNotifyTest2 {
 
     class MyThread extends Thread {
         @Override
@@ -22,7 +22,7 @@ public class WaitNotifyExample2 {
     }
 
     public static void main(String[] args) {
-        Thread thread = new WaitNotifyExample2().new MyThread();
+        Thread thread = new WaitNotifyTest2().new MyThread();
         synchronized (thread) { //这里锁对象和MyThread run方法中是同一个
             try {
                 thread.start();

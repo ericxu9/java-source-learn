@@ -24,7 +24,7 @@ public class WaitNotifyTest3 {
         Thread.sleep(3000L);
         synchronized (myThread) {
             System.out.println("wait before");
-            myThread.wait();
+            myThread.wait(); //卡在这里
             System.out.println("wait after");
         }
 

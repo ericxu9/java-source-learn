@@ -427,6 +427,7 @@ public abstract class AbstractQueuedSynchronizer
         Node() {    // Used to establish initial head or SHARED marker
         }
 
+        //用于添加排队使用
         Node(Thread thread, Node mode) {     // Used by addWaiter
             this.nextWaiter = mode;
             this.thread = thread;
@@ -449,7 +450,7 @@ public abstract class AbstractQueuedSynchronizer
     private transient volatile Node tail;
 
     /**
-     * 队列中同步状态，加锁、解锁等，可以扩展不同的状态
+     * 队列中同步状态，加锁、解锁等，可以扩展不同的状态（默认0说明是未加锁状态）
      * volatile
      */
     private volatile int state;
@@ -531,6 +532,7 @@ public abstract class AbstractQueuedSynchronizer
                 return node;
             }
         }
+        //尾节点为null，或者CAS更新失败，执行下面无限轮询进入队列，确保追加成功
         enq(node);
         return node;
     }
@@ -777,6 +779,7 @@ public abstract class AbstractQueuedSynchronizer
     /**
      * Acquires in exclusive uninterruptible mode for thread already in
      * queue. Used by condition wait methods as well as acquire.
+     * 轮询从队列中获取
      *
      * @param node the node
      * @param arg the acquire argument
@@ -789,7 +792,7 @@ public abstract class AbstractQueuedSynchronizer
             for (;;) { //无限轮询
                 final Node p = node.predecessor(); //获取前任节点
                 if (p == head && tryAcquire(arg)) { //如果前任节点是头节点 并且 成功获得了锁
-                    setHead(node); //将前任节点设置为头结点
+                    setHead(node); //将当前节点设置为头结点
                     p.next = null; // help GC
                     failed = false; //设置标记
                     return interrupted;

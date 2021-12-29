@@ -123,23 +123,22 @@ public class ReentrantLock implements Lock, java.io.Serializable {
         abstract void lock();
 
         /**
-         * Performs non-fair tryLock.  tryAcquire is implemented in
-         * subclasses, but both need nonfair try for trylock method.
+         * 非公平锁tryAcquire实现
          */
         final boolean nonfairTryAcquire(int acquires) {
             final Thread current = Thread.currentThread();
-            int c = getState();
-            if (c == 0) {
-                if (compareAndSetState(0, acquires)) {
-                    setExclusiveOwnerThread(current);
+            int c = getState(); //获取当前同步器state字段
+            if (c == 0) { //如果为0，说明当前没有其它线程占用，当前线程就能直接获得锁对象并占有
+                if (compareAndSetState(0, acquires)) { //修改AQS state字段，代表锁已被当前对象占用
+                    setExclusiveOwnerThread(current); //设置当前线程独占锁
                     return true;
                 }
             }
-            else if (current == getExclusiveOwnerThread()) {
-                int nextc = c + acquires;
+            else if (current == getExclusiveOwnerThread()) { //同一个线程独占为释放，再次尝试获取锁（这边说明是可重入的）
+                int nextc = c + acquires; //+1
                 if (nextc < 0) // overflow
                     throw new Error("Maximum lock count exceeded");
-                setState(nextc);
+                setState(nextc); //设置状态
                 return true;
             }
             return false;
@@ -193,7 +192,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
     }
 
     /**
-     * Sync object for non-fair locks
+     * 非公平锁实现
      */
     static final class NonfairSync extends Sync {
         private static final long serialVersionUID = 7316153563782823691L;
@@ -203,12 +202,13 @@ public class ReentrantLock implements Lock, java.io.Serializable {
          * acquire on failure.
          */
         final void lock() {
-            if (compareAndSetState(0, 1))
-                setExclusiveOwnerThread(Thread.currentThread());
+            if (compareAndSetState(0, 1)) //CAS尝试修改state字段1
+                setExclusiveOwnerThread(Thread.currentThread()); //修改状态成功，设置为当前线程独占，其它线程无法访问
             else
-                acquire(1);
+                acquire(1); //修改失败，说明有其它线程已经修改了状态，这时候就需要进入到队列中等待
         }
 
+        //尝试获得锁
         protected final boolean tryAcquire(int acquires) {
             return nonfairTryAcquire(acquires);
         }

@@ -653,7 +653,7 @@ public abstract class AbstractQueuedSynchronizer
     // Utilities for various versions of acquire
 
     /**
-     * Cancels an ongoing attempt to acquire.
+     * 取消持续尝试获取
      *
      * @param node the node
      */
@@ -662,12 +662,12 @@ public abstract class AbstractQueuedSynchronizer
         if (node == null)
             return;
 
-        node.thread = null;
+        node.thread = null; //将thread属性置为null
 
-        // Skip cancelled predecessors
+        // Skip cancelled predecessors 当前节点往前找，过滤节点状态为CANCELLED的
         Node pred = node.prev;
         while (pred.waitStatus > 0)
-            node.prev = pred = pred.prev;
+            node.prev = pred = pred.prev; //记录前任节点
 
         // predNext is the apparent node to unsplice. CASes below will
         // fail if not, in which case, we lost race vs another cancel
@@ -756,8 +756,13 @@ public abstract class AbstractQueuedSynchronizer
      * @return {@code true} if interrupted
      */
     private final boolean parkAndCheckInterrupt() {
+        //阻塞线程，并等待unpark唤醒
         LockSupport.park(this);
-        return Thread.interrupted(); // 当前线程是否已被中断，并清除中断标记位
+        /*
+         * 在park之后我们需要Thread.interrupted恢复下线程的中断状态，
+         * 这样下一次park才会生效。否则下一次的park不会生效的
+         */
+        return Thread.interrupted();
     }
 
     /*
@@ -789,13 +794,14 @@ public abstract class AbstractQueuedSynchronizer
                     failed = false; //设置标记
                     return interrupted;
                 }
+                //前任节点的状态为SIGNAL 并且 当前线程没有被中断
                 if (shouldParkAfterFailedAcquire(p, node) &&
                     parkAndCheckInterrupt())
                     interrupted = true;
             }
         } finally {
             if (failed)
-                cancelAcquire(node);
+                cancelAcquire(node); //取消继续获取
         }
     }
 

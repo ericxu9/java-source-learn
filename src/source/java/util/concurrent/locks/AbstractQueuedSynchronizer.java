@@ -551,7 +551,7 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
-     * Wakes up node's successor, if one exists.
+     * 如果后继节点存在，则唤起
      *
      * @param node the node
      */
@@ -562,8 +562,8 @@ public abstract class AbstractQueuedSynchronizer
          * fails or if status is changed by waiting thread.
          */
         int ws = node.waitStatus;
-        if (ws < 0)
-            compareAndSetWaitStatus(node, ws, 0);
+        if (ws < 0) // SIGNAL、CONDITION、PROPAGATE状态
+            compareAndSetWaitStatus(node, ws, 0); //修改waitStatus为0（）无状态
 
         /*
          * Thread to unpark is held in successor, which is normally
@@ -571,15 +571,15 @@ public abstract class AbstractQueuedSynchronizer
          * traverse backwards from tail to find the actual
          * non-cancelled successor.
          */
-        Node s = node.next;
-        if (s == null || s.waitStatus > 0) {
+        Node s = node.next; //获取下一个节点
+        if (s == null || s.waitStatus > 0) { //下一个节点为null 或者 状态为CANCELLED
             s = null;
-            for (Node t = tail; t != null && t != node; t = t.prev)
-                if (t.waitStatus <= 0)
+            for (Node t = tail; t != null && t != node; t = t.prev) //从尾节点往前找，
+                if (t.waitStatus <= 0) //SIGNAL、CONDITION、PROPAGATE和无状态（0），则赋值给s
                     s = t;
         }
         if (s != null)
-            LockSupport.unpark(s.thread);
+            LockSupport.unpark(s.thread); //唤醒节点的线程
     }
 
     /**
@@ -797,12 +797,13 @@ public abstract class AbstractQueuedSynchronizer
                     failed = false; //设置标记
                     return interrupted;
                 }
-                //前任节点的状态为SIGNAL 并且 当前线程没有被中断
+                //前任节点的状态为SIGNAL 并且 当前线程被中断
                 if (shouldParkAfterFailedAcquire(p, node) &&
                     parkAndCheckInterrupt())
                     interrupted = true;
             }
         } finally {
+            //异常执行
             if (failed)
                 cancelAcquire(node); //取消继续获取
         }
@@ -1125,7 +1126,7 @@ public abstract class AbstractQueuedSynchronizer
         //tryAcquire尝试获取锁，未获取会添加到等待队列中
         if (!tryAcquire(arg) &&
             acquireQueued(addWaiter(Node.EXCLUSIVE), arg))
-            selfInterrupt();
+            selfInterrupt(); //终端当前线程
     }
 
     /**
@@ -1176,6 +1177,8 @@ public abstract class AbstractQueuedSynchronizer
     }
 
     /**
+     * 释放独占锁，tryRelease方法需要子类实现
+     *
      * Releases in exclusive mode.  Implemented by unblocking one or
      * more threads if {@link #tryRelease} returns true.
      * This method can be used to implement method {@link Lock#unlock}.
@@ -1186,10 +1189,10 @@ public abstract class AbstractQueuedSynchronizer
      * @return the value returned from {@link #tryRelease}
      */
     public final boolean release(int arg) {
-        if (tryRelease(arg)) {
+        if (tryRelease(arg)) { //尝试释放锁
             Node h = head;
             if (h != null && h.waitStatus != 0)
-                unparkSuccessor(h);
+                unparkSuccessor(h); //unpark 后继节点
             return true;
         }
         return false;
@@ -1441,9 +1444,11 @@ public abstract class AbstractQueuedSynchronizer
         // The correctness of this depends on head being initialized
         // before tail and on head.next being accurate if the current
         // thread is first in queue.
-        Node t = tail; // Read fields in reverse initialization order
-        Node h = head;
+        Node t = tail; // Read fields in reverse initialization order 获取尾节点
+        Node h = head; // 获取头节点
         Node s;
+        // h!=t说明链表有数据
+        // 头结点的后继节为null 或者 后继节点的线程 != 当前线程
         return h != t &&
             ((s = h.next) == null || s.thread != Thread.currentThread());
     }

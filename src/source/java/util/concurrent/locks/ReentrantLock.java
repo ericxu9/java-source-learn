@@ -145,13 +145,13 @@ public class ReentrantLock implements Lock, java.io.Serializable {
         }
 
         protected final boolean tryRelease(int releases) {
-            int c = getState() - releases;
-            if (Thread.currentThread() != getExclusiveOwnerThread())
+            int c = getState() - releases; //获取state状态 - 1
+            if (Thread.currentThread() != getExclusiveOwnerThread()) //当前线程不是独占线程，直接抛异常
                 throw new IllegalMonitorStateException();
-            boolean free = false;
-            if (c == 0) {
+            boolean free = false; //是否被释放
+            if (c == 0) { //锁已被释放
                 free = true;
-                setExclusiveOwnerThread(null);
+                setExclusiveOwnerThread(null); //当前锁独占线程清空
             }
             setState(c);
             return free;
@@ -215,7 +215,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
     }
 
     /**
-     * Sync object for fair locks
+     * 非公平锁实现
      */
     static final class FairSync extends Sync {
         private static final long serialVersionUID = -3000897897090466540L;
@@ -231,7 +231,8 @@ public class ReentrantLock implements Lock, java.io.Serializable {
         protected final boolean tryAcquire(int acquires) {
             final Thread current = Thread.currentThread();
             int c = getState(); //获取当前状态
-            if (c == 0) {
+            if (c == 0) { //说明没有线程持有锁
+
                 if (!hasQueuedPredecessors() &&
                     compareAndSetState(0, acquires)) {
                     //获取到锁了，将当前线程设为独占锁，state = 1

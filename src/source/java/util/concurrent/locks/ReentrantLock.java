@@ -144,6 +144,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
             return false;
         }
 
+        /** 尝试释放锁 */
         protected final boolean tryRelease(int releases) {
             int c = getState() - releases; //获取state状态 - 1
             if (Thread.currentThread() != getExclusiveOwnerThread()) //当前线程不是独占线程，直接抛异常
@@ -157,6 +158,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
             return free;
         }
 
+        /** 判断锁是否被当前线程独占 */
         protected final boolean isHeldExclusively() {
             // While we must in general read state before owner,
             // we don't need to do so to check if current thread is owner
@@ -169,14 +171,17 @@ public class ReentrantLock implements Lock, java.io.Serializable {
 
         // Methods relayed from outer class
 
+        /** 获取独占线程 */
         final Thread getOwner() {
             return getState() == 0 ? null : getExclusiveOwnerThread();
         }
 
+        /** 返回状态 */
         final int getHoldCount() {
             return isHeldExclusively() ? getState() : 0;
         }
 
+        /** 资源是否占用 */
         final boolean isLocked() {
             return getState() != 0;
         }
@@ -233,6 +238,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
             int c = getState(); //获取当前状态
             if (c == 0) { //说明没有线程持有锁
 
+                //hasQueuedPredecessors 判断还有没有别的线程在等待获取锁
                 if (!hasQueuedPredecessors() &&
                     compareAndSetState(0, acquires)) {
                     //获取到锁了，将当前线程设为独占锁，state = 1

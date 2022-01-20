@@ -17,26 +17,26 @@ public class ReentrantReadWriteLockTest {
         new Thread(){
             @Override
             public void run() {
-                System.out.println("write lock before -- thread A");
-                writeLock.lock();
+                System.out.println("read lock 1 before -- thread A");
+                readLock.lock();
                 try {
-                    Thread.sleep(2000);
+                    Thread.sleep(100000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                writeLock.unlock();
-                System.out.println("write lock after -- thread A");
+                readLock.unlock();
+                System.out.println("read unlock 1 after -- thread A");
             }
         }.start();
 
         new Thread(){
             @Override
             public void run() {
-                System.out.println("read lock before -- thread B");
+                System.out.println("read lock 2 before -- thread B");
                 readLock.lock();
                 System.out.println("thread B");
                 readLock.unlock();
-                System.out.println("read lock after -- thread B");
+                System.out.println("read unlock 2 after -- thread B");
             }
         }.start();
     }

@@ -95,7 +95,7 @@ public class CopyOnWriteArrayList<E>
     /** The lock protecting all mutators */
     final transient ReentrantLock lock = new ReentrantLock();
 
-    /** The array, accessed only via getArray/setArray. */
+    /** 存放数据 */
     private transient volatile Object[] array;
 
     /**
@@ -434,8 +434,10 @@ public class CopyOnWriteArrayList<E>
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
+            //获取当前数组及size
             Object[] elements = getArray();
             int len = elements.length;
+            //直接将源数组拷贝到新数组上
             Object[] newElements = Arrays.copyOf(elements, len + 1);
             newElements[len] = e;
             setArray(newElements);
@@ -1126,10 +1128,14 @@ public class CopyOnWriteArrayList<E>
             (getArray(), Spliterator.IMMUTABLE | Spliterator.ORDERED);
     }
 
+    /**
+     * 迭代器
+     * @param <E>
+     */
     static final class COWIterator<E> implements ListIterator<E> {
-        /** Snapshot of the array */
+        /** 数组快照 */
         private final Object[] snapshot;
-        /** Index of element to be returned by subsequent call to next.  */
+        /** 游标  */
         private int cursor;
 
         private COWIterator(Object[] elements, int initialCursor) {
@@ -1137,37 +1143,62 @@ public class CopyOnWriteArrayList<E>
             snapshot = elements;
         }
 
+        /**
+         * 下一个是否还有数据
+         * @return
+         */
         public boolean hasNext() {
             return cursor < snapshot.length;
         }
 
+        /**
+         * 前面是否还有数据
+         * @return
+         */
         public boolean hasPrevious() {
             return cursor > 0;
         }
 
+        /**
+         * 获取下一个节点
+         * @return
+         */
         @SuppressWarnings("unchecked")
         public E next() {
             if (! hasNext())
                 throw new NoSuchElementException();
-            return (E) snapshot[cursor++];
+            return (E) snapshot[cursor++]; //获取数据后，游标+1
         }
 
+        /**
+         * 获取前一个数据
+         * @return
+         */
         @SuppressWarnings("unchecked")
         public E previous() {
             if (! hasPrevious())
                 throw new NoSuchElementException();
-            return (E) snapshot[--cursor];
+            return (E) snapshot[--cursor]; //获取数据后，游标-1
         }
 
+        /**
+         * 下一项索引
+         * @return
+         */
         public int nextIndex() {
             return cursor;
         }
 
+        /**
+         * 前一项索引
+         * @return
+         */
         public int previousIndex() {
             return cursor-1;
         }
 
         /**
+         * 不支持
          * Not supported. Always throws UnsupportedOperationException.
          * @throws UnsupportedOperationException always; {@code remove}
          *         is not supported by this iterator.
@@ -1177,6 +1208,7 @@ public class CopyOnWriteArrayList<E>
         }
 
         /**
+         * 不支持
          * Not supported. Always throws UnsupportedOperationException.
          * @throws UnsupportedOperationException always; {@code set}
          *         is not supported by this iterator.
@@ -1186,6 +1218,7 @@ public class CopyOnWriteArrayList<E>
         }
 
         /**
+         * 不支持
          * Not supported. Always throws UnsupportedOperationException.
          * @throws UnsupportedOperationException always; {@code add}
          *         is not supported by this iterator.
@@ -1672,6 +1705,9 @@ public class CopyOnWriteArrayList<E>
         UNSAFE.putObjectVolatile(this, lockOffset, new ReentrantLock());
     }
     private static final sun.misc.Unsafe UNSAFE;
+    /**
+     * lock锁偏移量
+     */
     private static final long lockOffset;
     static {
         try {

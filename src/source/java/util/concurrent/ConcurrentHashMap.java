@@ -1009,27 +1009,34 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
     /** Implementation for put and putIfAbsent */
     final V putVal(K key, V value, boolean onlyIfAbsent) {
         if (key == null || value == null) throw new NullPointerException();
-        int hash = spread(key.hashCode());
+        int hash = spread(key.hashCode()); //计算key hash值
+        //记录链表长度
         int binCount = 0;
         for (Node<K,V>[] tab = table;;) {
             Node<K,V> f; int n, i, fh;
+            //table为空，初始化
             if (tab == null || (n = tab.length) == 0)
                 tab = initTable();
+            //寻找当前hash值对应的数组下标对应的值，如果f为空，则进行CAS操作，将新值添加到数组中
             else if ((f = tabAt(tab, i = (n - 1) & hash)) == null) {
                 if (casTabAt(tab, i, null,
                              new Node<K,V>(hash, key, value, null)))
                     break;                   // no lock when adding to empty bin
             }
+            //如果当前node存在，并且hash == MOVED，进行数据迁移
             else if ((fh = f.hash) == MOVED)
                 tab = helpTransfer(tab, f);
             else {
                 V oldVal = null;
+                //使用数组中key hash找到的f node 作为锁对象
                 synchronized (f) {
                     if (tabAt(tab, i) == f) {
+                        //fhash >= 0
                         if (fh >= 0) {
-                            binCount = 1;
+                            binCount = 1; //初始化链表长度为1
                             for (Node<K,V> e = f;; ++binCount) {
                                 K ek;
+                                //如果key相同则直接覆盖并break
                                 if (e.hash == hash &&
                                     ((ek = e.key) == key ||
                                      (ek != null && key.equals(ek)))) {
@@ -1038,6 +1045,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
                                         e.val = value;
                                     break;
                                 }
+                                //将新值放到链表尾端
                                 Node<K,V> pred = e;
                                 if ((e = e.next) == null) {
                                     pred.next = new Node<K,V>(hash, key,
@@ -1046,9 +1054,11 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
                                 }
                             }
                         }
+                        //判断node实例是否为红黑树
                         else if (f instanceof TreeBin) {
                             Node<K,V> p;
                             binCount = 2;
+                            //插入节点到红黑树中
                             if ((p = ((TreeBin<K,V>)f).putTreeVal(hash, key,
                                                            value)) != null) {
                                 oldVal = p.val;
@@ -1059,6 +1069,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
                     }
                 }
                 if (binCount != 0) {
+                    //链表长度 >= 8 转换红黑树结构
                     if (binCount >= TREEIFY_THRESHOLD)
                         treeifyBin(tab, i);
                     if (oldVal != null)
@@ -2224,17 +2235,21 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
         Node<K,V>[] tab; int sc;
         while ((tab = table) == null || tab.length == 0) {
             if ((sc = sizeCtl) < 0)
-                Thread.yield(); // lost initialization race; just spin
-            else if (U.compareAndSwapInt(this, SIZECTL, sc, -1)) {
+                Thread.yield(); // lost initialization race; just spin 有其它线程正在执行初始化操作，让出CPU时间片
+            else if (U.compareAndSwapInt(this, SIZECTL, sc, -1)) { //CAS交换，SIZECTL偏移量设置为-1说明获取锁成功
                 try {
                     if ((tab = table) == null || tab.length == 0) {
-                        int n = (sc > 0) ? sc : DEFAULT_CAPACITY;
+                        int n = (sc > 0) ? sc : DEFAULT_CAPACITY; //判断使用自定义容量还是默认容量 16
+                        //初始化数组size
                         @SuppressWarnings("unchecked")
                         Node<K,V>[] nt = (Node<K,V>[])new Node<?,?>[n];
+                        //复制给table
                         table = tab = nt;
+                        // 16 >>> 2 = 12 , 就是 * 0.75
                         sc = n - (n >>> 2);
                     }
                 } finally {
+                    //将上面计算的sc结果赋值给sizeCtl
                     sizeCtl = sc;
                 }
                 break;
@@ -2255,6 +2270,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      */
     private final void addCount(long x, int check) {
         CounterCell[] as; long b, s;
+        //判断计数器不为null 或者 CAS修改baseCount失败
         if ((as = counterCells) != null ||
             !U.compareAndSwapLong(this, BASECOUNT, b = baseCount, s = b + x)) {
             CounterCell a; long v; int m;
@@ -2320,6 +2336,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * @param size number of elements (doesn't need to be perfectly accurate)
      */
     private final void tryPresize(int size) {
+        //size 的 1.5 倍，再加 1，再往上取最近的 2 的 n 次方。
         int c = (size >= (MAXIMUM_CAPACITY >>> 1)) ? MAXIMUM_CAPACITY :
             tableSizeFor(size + (size >>> 1) + 1);
         int sc;
@@ -2611,6 +2628,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
     private final void treeifyBin(Node<K,V>[] tab, int index) {
         Node<K,V> b; int n, sc;
         if (tab != null) {
+            //table size >= 64 才会转换红黑树
             if ((n = tab.length) < MIN_TREEIFY_CAPACITY)
                 tryPresize(n << 1);
             else if ((b = tabAt(tab, index)) != null && b.hash >= 0) {

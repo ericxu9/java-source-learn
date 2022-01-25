@@ -90,7 +90,7 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
      */
     private static final long serialVersionUID = -817911632652898426L;
 
-    /** The queued items */
+    /** 使用数组作为队列容器 */
     final Object[] items;
 
     /** items index for next take, poll, peek or remove */
@@ -99,7 +99,7 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
     /** items index for next put, offer, or add */
     int putIndex;
 
-    /** Number of elements in the queue */
+    /** 队列中元素数量 */
     int count;
 
     /*
@@ -110,10 +110,10 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
     /** Main lock guarding all access */
     final ReentrantLock lock;
 
-    /** Condition for waiting takes */
+    /** take方法阻塞 */
     private final Condition notEmpty;
 
-    /** Condition for waiting puts */
+    /** put 方法阻塞 */
     private final Condition notFull;
 
     /**
@@ -151,6 +151,7 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
     }
 
     /**
+     * 入队
      * Inserts element at current put position, advances, and signals.
      * Call only when holding lock.
      */
@@ -158,11 +159,12 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
         // assert lock.getHoldCount() == 1;
         // assert items[putIndex] == null;
         final Object[] items = this.items;
-        items[putIndex] = x;
+        items[putIndex] = x; //往数组中添加元素
+        //容量满了，将下个index置位0
         if (++putIndex == items.length)
             putIndex = 0;
-        count++;
-        notEmpty.signal();
+        count++; //当前队列数量 + 1
+        notEmpty.signal(); //唤醒出队阻塞
     }
 
     /**
@@ -179,7 +181,7 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
         if (++takeIndex == items.length)
             takeIndex = 0;
         count--;
-        if (itrs != null)
+        if (itrs != null) //迭代器使用
             itrs.elementDequeued();
         notFull.signal();
         return x;
@@ -253,7 +255,9 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
         if (capacity <= 0)
             throw new IllegalArgumentException();
         this.items = new Object[capacity];
+        //设置非公平锁
         lock = new ReentrantLock(fair);
+        //设置阻塞条件
         notEmpty = lock.newCondition();
         notFull =  lock.newCondition();
     }
@@ -326,9 +330,11 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
+            //容量满了入队失败
             if (count == items.length)
                 return false;
             else {
+                //入队
                 enqueue(e);
                 return true;
             }
@@ -399,6 +405,7 @@ public class ArrayBlockingQueue<E> extends AbstractQueue<E>
         final ReentrantLock lock = this.lock;
         lock.lockInterruptibly();
         try {
+            //如果队列为空，则阻塞等待元素入队
             while (count == 0)
                 notEmpty.await();
             return dequeue();

@@ -137,8 +137,9 @@ public class DelayQueue<E extends Delayed> extends AbstractQueue<E>
         final ReentrantLock lock = this.lock;
         lock.lock();
         try {
+            //往PriorityQueue中存数据
             q.offer(e);
-            if (q.peek() == e) {
+            if (q.peek() == e) { //第一个时，将leader设置为null，并且唤醒take操作
                 leader = null;
                 available.signal();
             }
@@ -205,18 +206,25 @@ public class DelayQueue<E extends Delayed> extends AbstractQueue<E>
         final ReentrantLock lock = this.lock;
         lock.lockInterruptibly();
         try {
+            //自旋，确保队列中有数据
             for (;;) {
+                //获取第一个元素
                 E first = q.peek();
+                //第一个元素为空，阻塞，等待入队操作后打开
                 if (first == null)
                     available.await();
                 else {
+                    //获取自定义Delayed对象延迟时间
                     long delay = first.getDelay(NANOSECONDS);
+                    //到了时间，从队列中取出
                     if (delay <= 0)
                         return q.poll();
                     first = null; // don't retain ref while waiting
+                    //要等上一个leader线程执行完后再释放
                     if (leader != null)
                         available.await();
                     else {
+                        //将当前线程设置为leader线程
                         Thread thisThread = Thread.currentThread();
                         leader = thisThread;
                         try {

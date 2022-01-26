@@ -253,6 +253,7 @@ public class FutureTask<V> implements RunnableFuture<V> {
     }
 
     public void run() {
+        //新建任务，cas修改runner为当前线程
         if (state != NEW ||
             !UNSAFE.compareAndSwapObject(this, runnerOffset,
                                          null, Thread.currentThread()))
@@ -271,7 +272,7 @@ public class FutureTask<V> implements RunnableFuture<V> {
                     setException(ex);
                 }
                 if (ran)
-                    set(result);
+                    set(result); //设置执行结果
             }
         } finally {
             // runner must be non-null until state is settled to

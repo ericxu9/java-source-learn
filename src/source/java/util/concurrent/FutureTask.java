@@ -161,7 +161,13 @@ public class FutureTask<V> implements RunnableFuture<V> {
         return state != NEW;
     }
 
+    /**
+     * 取消任务执行
+     * @param mayInterruptIfRunning
+     * @return
+     */
     public boolean cancel(boolean mayInterruptIfRunning) {
+        //state不是NEW 并且
         if (!(state == NEW &&
               UNSAFE.compareAndSwapInt(this, stateOffset, NEW,
                   mayInterruptIfRunning ? INTERRUPTING : CANCELLED)))

@@ -378,16 +378,17 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * that workerCount is 0 (which sometimes entails a recheck -- see
      * below).
      */
+    //int是32位的，这里把int的高3位拿来充当线程池状态的标志位,后29位拿来充当当前运行worker的数量
     private final AtomicInteger ctl = new AtomicInteger(ctlOf(RUNNING, 0));
     private static final int COUNT_BITS = Integer.SIZE - 3;
     private static final int CAPACITY   = (1 << COUNT_BITS) - 1;
 
     // runState is stored in the high-order bits
-    private static final int RUNNING    = -1 << COUNT_BITS;
-    private static final int SHUTDOWN   =  0 << COUNT_BITS;
-    private static final int STOP       =  1 << COUNT_BITS;
-    private static final int TIDYING    =  2 << COUNT_BITS;
-    private static final int TERMINATED =  3 << COUNT_BITS;
+    private static final int RUNNING    = -1 << COUNT_BITS; //高3位 111 该状态的线程池会接收新任务，并处理阻塞队列中的任务
+    private static final int SHUTDOWN   =  0 << COUNT_BITS; //高3位 000 该状态的线程池不会接收新任务，但会处理阻塞队列中的任务；
+    private static final int STOP       =  1 << COUNT_BITS; //高3位 001 该状态的线程不会接收新任务，也不会处理阻塞队列中的任务，而且会中断正在运行的任务；
+    private static final int TIDYING    =  2 << COUNT_BITS; //高3位 010 所有的任务都已经终止；
+    private static final int TERMINATED =  3 << COUNT_BITS; //高3位 011 terminated()方法已经执行完成
 
     // Packing and unpacking ctl
     private static int runStateOf(int c)     { return c & ~CAPACITY; }

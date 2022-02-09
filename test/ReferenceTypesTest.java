@@ -5,6 +5,10 @@ import java.lang.ref.WeakReference;
 
 public class ReferenceTypesTest {
 
+    static {
+        System.out.println(111);
+    }
+
     public static void main(String[] args) {
         testSoftRef();
 //        testWeakRef();
